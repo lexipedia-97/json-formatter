@@ -11,6 +11,8 @@
 /node_modules
 npm-debug.log
 yarn-error.log
+snapcraft-login*.txt
+*.snapcraft-credentials
 
 # IDEs and editors
 .idea/

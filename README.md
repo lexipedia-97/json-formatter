@@ -60,7 +60,7 @@ Antes da primeira publicação, configure o secret `SNAPCRAFT_STORE_CREDENTIALS`
 ```bash
 snapcraft login
 snapcraft export-login \
-  --snaps json-devtools-local \
+  --snaps dev-tools-local \
   --channels edge,beta,candidate,stable \
   --acls package_access,package_push,package_release \
   --expires 2027-08-01T00:00:00Z \
@@ -93,7 +93,7 @@ Crie uma conta Ubuntu One em https://login.ubuntu.com e autentique pelo terminal
 
 ```bash
 snapcraft login
-snapcraft register json-devtools-local
+snapcraft register dev-tools-local
 ```
 
 O nome é globalmente único. Se estiver ocupado, escolha outro nome com letras minúsculas, números e hífens, alterando também `name` no `package.json` antes do build.
@@ -103,22 +103,22 @@ O nome é globalmente único. Se estiver ocupado, escolha outro nome com letras 
 ```bash
 npm run dist:linux
 sudo snap install --dangerous release/*.snap
-json-devtools-local
+dev-tools-local
 ```
 
-O parâmetro `--dangerous` apenas indica que o arquivo local ainda não foi assinado pela loja. Depois do teste, remova-o com `sudo snap remove json-devtools-local`.
+O parâmetro `--dangerous` apenas indica que o arquivo local ainda não foi assinado pela loja. Depois do teste, remova-o com `sudo snap remove dev-tools-local`.
 
 ### 4. Enviar para o canal de testes
 
 ```bash
 snapcraft upload release/*.snap --release=edge
-snapcraft status json-devtools-local
+snapcraft status dev-tools-local
 ```
 
 Em outra máquina, teste a versão publicada:
 
 ```bash
-sudo snap install json-devtools-local --edge
+sudo snap install dev-tools-local --edge
 ```
 
 ### 5. Promover para produção
@@ -126,8 +126,8 @@ sudo snap install json-devtools-local --edge
 Encontre a revisão e publique-a no canal estável:
 
 ```bash
-snapcraft revisions json-devtools-local
-snapcraft release json-devtools-local REVISAO stable
+snapcraft revisions dev-tools-local
+snapcraft release dev-tools-local REVISAO stable
 ```
 
 No painel https://snapcraft.io/snaps, complete título, descrição, ícone, screenshots, licença, categoria **Development**, website e suporte. Quando a revisão estiver no canal `stable`, ela poderá aparecer no Ubuntu App Center.

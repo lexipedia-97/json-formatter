@@ -1,8 +1,8 @@
 {
-  "name": "json-devtools-local",
+  "name": "dev-tools-local",
   "version": "1.0.0",
   "description": "Formatador JSON e ferramentas para desenvolvedores, 100% local.",
-  "desktopName": "json-devtools-local.desktop",
+  "desktopName": "dev-tools-local.desktop",
   "main": "electron/main.cjs",
   "author": "Lexipedia",
   "license": "MIT",
