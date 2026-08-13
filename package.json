@@ -15,10 +15,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:smoke": "npm run build && electron . --smoke-test",
-    "dist": "npm run build && electron-builder",
+    "dist": "npm run build && electron-builder --publish never",
     "dist:linux": "npm run build && npm run dist:linux:appimage && npm run dist:linux:snap",
-    "dist:linux:appimage": "electron-builder --linux AppImage --x64",
-    "dist:linux:snap": "electron-builder --linux snap --x64",
+    "dist:linux:appimage": "electron-builder --linux AppImage --x64 --publish never",
+    "dist:linux:snap": "electron-builder --linux snap --x64 --publish never",
     "release:ubuntu": "bash scripts/release-ubuntu.sh"
   },
   "private": true,

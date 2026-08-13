@@ -45,6 +45,7 @@ npm run dist:linux
 Os pacotes `.AppImage` e `.snap` serão criados em `release/`.
 
 Os formatos são construídos sequencialmente para impedir que AppImage e Snap disputem a extração das mesmas ferramentas no cache do `electron-builder`.
+O empacotador usa `--publish never`: os arquivos são publicados somente pelas etapas explícitas do GitHub Actions, evitando que tags acionem uma tentativa automática de GitHub Release que exigiria `GH_TOKEN`.
 
 ## Publicar no Ubuntu App Center (Snap Store)
 
