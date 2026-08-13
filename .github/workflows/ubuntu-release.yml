@@ -36,6 +36,9 @@ jobs:
     name: Testar e gerar pacotes Linux
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
+      ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
 
     steps:
       - name: Baixar o código
@@ -49,6 +52,10 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
+
+      - name: Preparar cache do Electron Builder
+        shell: bash
+        run: mkdir -p "$ELECTRON_CACHE" "$ELECTRON_BUILDER_CACHE"
 
       - name: Executar testes unitários
         run: npm test -- --watch=false

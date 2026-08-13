@@ -2,6 +2,7 @@
   "name": "json-devtools-local",
   "version": "1.0.0",
   "description": "Formatador JSON e ferramentas para desenvolvedores, 100% local.",
+  "desktopName": "json-devtools-local.desktop",
   "main": "electron/main.cjs",
   "author": "Lexipedia",
   "license": "MIT",
@@ -15,7 +16,9 @@
     "test": "ng test",
     "test:smoke": "npm run build && electron . --smoke-test",
     "dist": "npm run build && electron-builder",
-    "dist:linux": "npm run build && electron-builder --linux AppImage snap",
+    "dist:linux": "npm run build && npm run dist:linux:appimage && npm run dist:linux:snap",
+    "dist:linux:appimage": "electron-builder --linux AppImage --x64",
+    "dist:linux:snap": "electron-builder --linux snap --x64",
     "release:ubuntu": "bash scripts/release-ubuntu.sh"
   },
   "private": true,
@@ -68,14 +71,19 @@
         "snap"
       ],
       "category": "Development",
+      "syncDesktopName": true,
       "icon": "build/icon.png",
       "synopsis": "JSON e DevTools locais",
       "description": "Formate, valide e converta JSON, gere UUIDs, Base64 e hashes sem enviar dados para a internet."
     },
-    "snap": {
-      "grade": "stable",
-      "confinement": "strict",
-      "summary": "JSON e DevTools locais"
+    "snapcraft": {
+      "base": "core22",
+      "core22": {
+        "grade": "stable",
+        "confinement": "strict",
+        "summary": "JSON e DevTools locais",
+        "useTemplateApp": true
+      }
     }
   }
 }

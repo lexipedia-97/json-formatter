@@ -44,6 +44,8 @@ npm run dist:linux
 
 Os pacotes `.AppImage` e `.snap` serão criados em `release/`.
 
+Os formatos são construídos sequencialmente para impedir que AppImage e Snap disputem a extração das mesmas ferramentas no cache do `electron-builder`.
+
 ## Publicar no Ubuntu App Center (Snap Store)
 
 O Ubuntu App Center lista aplicativos distribuídos pela Snap Store.
