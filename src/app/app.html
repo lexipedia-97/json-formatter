@@ -1,0 +1,173 @@
+<p-toast position="bottom-right" />
+
+<div class="app-shell" (window:keydown)="handleShortcut($event)">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span>{{ '{' }}</span><span>{{ '}' }}</span></div>
+      <div>
+        <strong>DevKit Local</strong>
+        <small>Developer tools</small>
+      </div>
+    </div>
+
+    <div class="section-label">Ferramentas</div>
+    <nav aria-label="Ferramentas disponíveis">
+      @for (tool of tools; track tool.id) {
+        <button
+          type="button"
+          class="nav-item"
+          [class.active]="activeTool() === tool.id"
+          [attr.aria-current]="activeTool() === tool.id ? 'page' : null"
+          (click)="selectTool(tool.id)"
+        >
+          <i [class]="tool.icon" aria-hidden="true"></i>
+          <span>{{ tool.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="privacy-card">
+      <div><span class="online-dot"></span><strong>100% offline</strong></div>
+      <p>Seus dados nunca saem deste computador.</p>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">{{ currentTool().shortLabel }}</span>
+        <h1>{{ currentTool().label }}</h1>
+        <p>{{ currentTool().description }}</p>
+      </div>
+      <div class="shortcut"><kbd>⌘</kbd><kbd>Enter</kbd><span>executar</span></div>
+    </header>
+
+    <div class="content">
+      @switch (activeTool()) {
+        @case ('json') {
+          <section class="tool-view json-view" aria-labelledby="json-title">
+            <div class="actionbar">
+              <div class="primary-actions">
+                <p-button id="format-json" label="Formatar" icon="pi pi-sparkles" (onClick)="processJson('format')" />
+                <p-button label="Minificar" icon="pi pi-compress" severity="secondary" [outlined]="true" (onClick)="processJson('minify')" />
+                <p-button label="Converter para YAML" icon="pi pi-arrow-right" severity="secondary" [outlined]="true" (onClick)="processJson('yaml')" />
+              </div>
+              <p-button label="Limpar tudo" icon="pi pi-trash" severity="secondary" [text]="true" (onClick)="clearJson()" />
+            </div>
+
+            <div class="editor-grid">
+              <article class="panel editor-panel">
+                <div class="panel-header">
+                  <span>Entrada</span>
+                  <small>{{ inputBytes() | number:'1.0-0' }} bytes</small>
+                </div>
+                <textarea
+                  id="json-input"
+                  pTextarea
+                  spellcheck="false"
+                  [ngModel]="jsonInput()"
+                  (ngModelChange)="updateJsonInput($event)"
+                  placeholder='Cole seu JSON aqui…&#10;&#10;{ "projeto": "meu-app", "ativo": true }'
+                ></textarea>
+              </article>
+
+              <article class="panel editor-panel">
+                <div class="panel-header">
+                  <span>Resultado</span>
+                  <p-button icon="pi pi-copy" label="Copiar" severity="secondary" [text]="true" size="small" (onClick)="copy(jsonOutput())" />
+                </div>
+                <textarea id="json-output" pTextarea spellcheck="false" [ngModel]="jsonOutput()" readonly placeholder="O resultado aparecerá aqui…"></textarea>
+              </article>
+            </div>
+
+            <p-message
+              [severity]="jsonStatusTone() === 'error' ? 'error' : jsonStatusTone() === 'success' ? 'success' : 'secondary'"
+              styleClass="status-message"
+            >{{ jsonStatus() }}</p-message>
+          </section>
+        }
+
+        @case ('uuid') {
+          <section class="tool-view compact-view">
+            <article class="panel utility-card">
+              <div class="utility-heading">
+                <div class="icon-box"><i class="pi pi-sparkles"></i></div>
+                <div><h2>UUID v4</h2><p>Gere até 100 identificadores únicos por vez.</p></div>
+              </div>
+
+              <div class="form-row">
+                <label for="uuid-count">Quantidade</label>
+                <p-inputnumber inputId="uuid-count" [ngModel]="uuidCount()" (ngModelChange)="updateUuidCount($event)" [min]="1" [max]="100" [showButtons]="true" />
+                <p-button id="generate-uuid" label="Gerar UUIDs" icon="pi pi-sparkles" (onClick)="generateUuids()" />
+              </div>
+
+              <div class="result-box">
+                <div class="panel-header">
+                  <span>Resultado</span>
+                  <p-button icon="pi pi-copy" label="Copiar todos" severity="secondary" [text]="true" size="small" (onClick)="copy(uuidOutput())" />
+                </div>
+                <textarea id="uuid-output" pTextarea [ngModel]="uuidOutput()" readonly></textarea>
+              </div>
+            </article>
+          </section>
+        }
+
+        @case ('base64') {
+          <section class="tool-view compact-view wide">
+            <article class="panel utility-card full-height-card">
+              <div class="primary-actions">
+                <p-button id="encode-base64" label="Codificar" icon="pi pi-arrow-right" (onClick)="encodeBase64()" />
+                <p-button id="decode-base64" label="Decodificar" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="decodeBase64()" />
+              </div>
+
+              <div class="dual-fields">
+                <div class="field-group">
+                  <label for="base64-input">Conteúdo de entrada</label>
+                  <textarea id="base64-input" pTextarea spellcheck="false" [ngModel]="base64Input()" (ngModelChange)="base64Input.set($event)" placeholder="Digite ou cole o conteúdo…"></textarea>
+                </div>
+                <div class="field-group result-field">
+                  <div class="field-label"><label for="base64-output">Resultado</label><p-button icon="pi pi-copy" severity="secondary" [text]="true" pTooltip="Copiar resultado" (onClick)="copy(base64Output())" /></div>
+                  <textarea id="base64-output" pTextarea [ngModel]="base64Output()" readonly placeholder="O resultado aparecerá aqui…"></textarea>
+                </div>
+              </div>
+              <p-message severity="secondary">{{ base64Status() }}</p-message>
+            </article>
+          </section>
+        }
+
+        @case ('hash') {
+          <section class="tool-view compact-view wide">
+            <article class="panel utility-card">
+              <div class="utility-heading">
+                <div class="icon-box"><i class="pi pi-hashtag"></i></div>
+                <div><h2>Hash de texto</h2><p>O resultado é atualizado enquanto você digita.</p></div>
+              </div>
+
+              <p-selectbutton
+                [options]="hashOptions"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="hashAlgorithm()"
+                (ngModelChange)="setHashAlgorithm($event)"
+                ariaLabel="Algoritmo de hash"
+              />
+
+              <div class="field-group hash-input-group">
+                <label for="hash-input">Texto de entrada</label>
+                <textarea id="hash-input" pTextarea spellcheck="false" [ngModel]="hashInput()" (ngModelChange)="hashInput.set($event)" placeholder="Digite o texto para gerar o hash…"></textarea>
+              </div>
+
+              <div class="field-group">
+                <label for="hash-output">Resultado {{ hashAlgorithm().toUpperCase() }}</label>
+                <div class="copy-field">
+                  <input id="hash-output" pInputText [ngModel]="hashOutput()" readonly placeholder="O hash aparecerá aqui" />
+                  <p-button icon="pi pi-copy" label="Copiar" severity="secondary" [outlined]="true" (onClick)="copy(hashOutput())" />
+                </div>
+              </div>
+            </article>
+          </section>
+        }
+      }
+    </div>
+  </main>
+</div>

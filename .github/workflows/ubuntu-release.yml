@@ -1,0 +1,115 @@
+name: Ubuntu Build and Snap Store Release
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publicar o Snap na Snap Store'
+        required: true
+        type: boolean
+        default: false
+      channel:
+        description: 'Canal de destino'
+        required: true
+        type: choice
+        default: edge
+        options:
+          - edge
+          - beta
+          - candidate
+          - stable
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ubuntu-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-linux:
+    name: Testar e gerar pacotes Linux
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes unitários
+        run: npm test -- --watch=false
+
+      - name: Auditar dependências de produção
+        run: npm audit --omit=dev
+
+      - name: Gerar AppImage e Snap
+        run: npm run dist:linux
+
+      - name: Criar checksums
+        shell: bash
+        run: |
+          cd release
+          sha256sum ./*.AppImage ./*.snap > SHA256SUMS.txt
+
+      - name: Armazenar pacotes do Ubuntu
+        uses: actions/upload-artifact@v4
+        with:
+          name: json-devtools-local-linux-${{ github.run_number }}
+          path: |
+            release/*.AppImage
+            release/*.snap
+            release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Definir canal de publicação
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish)
+        id: release-channel
+        shell: bash
+        env:
+          MANUAL_CHANNEL: ${{ inputs.channel }}
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            echo "channel=${MANUAL_CHANNEL}" >> "$GITHUB_OUTPUT"
+          else
+            echo "channel=edge" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar Snapcraft
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish)
+        run: sudo snap install snapcraft --classic
+
+      - name: Publicar na Snap Store
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish)
+        shell: bash
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+          RELEASE_CHANNEL: ${{ steps.release-channel.outputs.channel }}
+        run: |
+          if [[ -z "${SNAPCRAFT_STORE_CREDENTIALS}" ]]; then
+            echo "::error::O secret SNAPCRAFT_STORE_CREDENTIALS não está configurado no repositório."
+            exit 1
+          fi
+
+          SNAP_FILE="$(find release -maxdepth 1 -type f -name '*.snap' -print -quit)"
+          if [[ -z "${SNAP_FILE}" ]]; then
+            echo "::error::Nenhum arquivo .snap foi gerado."
+            exit 1
+          fi
+
+          snapcraft whoami
+          snapcraft upload "${SNAP_FILE}" --release="${RELEASE_CHANNEL}"
